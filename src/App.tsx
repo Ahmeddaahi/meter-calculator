@@ -14,7 +14,18 @@ function App() {
     };
   });
 
-  const { isActive, isWaiting, distance, waitingSeconds, fare, startRide, stopRide, toggleWaiting } = useMeter(settings);
+  const {
+    isActive,
+    isWaiting,
+    distance,
+    waitingSeconds,
+    fare,
+    gpsError,
+    isWaitingForLock,
+    startRide,
+    stopRide,
+    toggleWaiting
+  } = useMeter(settings);
   const [showSettings, setShowSettings] = useState(false);
 
   // Buffer state for modal inputs
@@ -45,12 +56,24 @@ function App() {
           <span className="taxi-icon">🚕</span>
           <h1>TAXI METER</h1>
         </div>
-        <div className={`gps-indicator ${isActive ? 'active' : ''}`}>
-          {isActive ? 'GPS LIVE' : 'GPS STANDBY'}
+        <div className={`gps-indicator ${isActive && !gpsError ? 'active' : ''}`}>
+          {gpsError ? 'ERROR' : isActive ? 'GPS LIVE' : 'GPS STANDBY'}
         </div>
       </header>
 
       <main className="content">
+        {gpsError && (
+          <div className="gps-status-banner error">
+            ⚠️ {gpsError}
+          </div>
+        )}
+
+        {isActive && isWaitingForLock && !gpsError && (
+          <div className="gps-status-banner waiting">
+            ⏳ Waiting for GPS signal...
+          </div>
+        )}
+
         <div className="meter-card glass">
           <div className="label">TOTAL FARE</div>
           <div className="fare-display meter-font">

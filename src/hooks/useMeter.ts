@@ -28,6 +28,8 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
     const [waitingSeconds, setWaitingSeconds] = useState(0);
     const [isWaiting, setIsWaiting] = useState(false);
     const [fare, setFare] = useState(0);
+    const [gpsError, setGpsError] = useState<string | null>(null);
+    const [isWaitingForLock, setIsWaitingForLock] = useState(false);
 
     const lastPosRef = useRef<GeolocationCoordinates | null>(null);
     const watchIdRef = useRef<number | null>(null);
@@ -39,11 +41,16 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
         setWaitingSeconds(0);
         setIsWaiting(false);
         setFare(0);
+        setGpsError(null);
+        setIsWaitingForLock(true);
         lastPosRef.current = null;
 
         if ("geolocation" in navigator) {
             watchIdRef.current = navigator.geolocation.watchPosition(
                 (position) => {
+                    setIsWaitingForLock(false);
+                    setGpsError(null);
+
                     if (lastPosRef.current) {
                         const d = calculateDistance(
                             lastPosRef.current.latitude,
@@ -51,22 +58,37 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
                             position.coords.latitude,
                             position.coords.longitude
                         );
-                        // Ignore small jitter (< 10 meters)
-                        if (d > 0.01) {
+                        // Lower threshold to 5 meters (0.005 km) for better responsiveness on foot
+                        if (d > 0.005) {
                             setDistance(prev => prev + d);
                         }
                     }
                     lastPosRef.current = position.coords;
                 },
-                (error) => console.error("GPS Error:", error),
-                { enableHighAccuracy: true }
+                (error) => {
+                    console.error("GPS Error:", error);
+                    setIsWaitingForLock(false);
+                    let msg = "Unknown GPS Error";
+                    if (error.code === error.PERMISSION_DENIED) msg = "GPS Permission Denied. Please enable location.";
+                    if (error.code === error.POSITION_UNAVAILABLE) msg = "GPS Signal Lost. Try moving to an open area.";
+                    if (error.code === error.TIMEOUT) msg = "GPS Request Timed Out.";
+                    setGpsError(msg);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
             );
+        } else {
+            setGpsError("Geolocation is not supported by this browser.");
         }
     };
 
     const stopRide = () => {
         setIsActive(false);
         setIsWaiting(false);
+        setIsWaitingForLock(false);
         if (watchIdRef.current !== null) {
             navigator.geolocation.clearWatch(watchIdRef.current);
         }
@@ -101,6 +123,8 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
         distance,
         waitingSeconds,
         fare,
+        gpsError,
+        isWaitingForLock,
         startRide,
         stopRide,
         toggleWaiting
