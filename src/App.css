@@ -130,10 +130,50 @@
   box-shadow: 0 10px 30px var(--accent-glow);
 }
 
+.active-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.waiting-btn {
+  width: 100%;
+  padding: 1.2rem;
+  font-size: 1.2rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.waiting-btn.active {
+  background: var(--warning-color, #ffbb33);
+  color: #000;
+  box-shadow: 0 0 20px rgba(255, 187, 51, 0.3);
+}
+
+.waiting-active {
+  animation: pulse-waiting 2s infinite;
+}
+
+@keyframes pulse-waiting {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 .stop-btn {
   width: 100%;
-  padding: 1.5rem;
-  font-size: 1.5rem;
+  padding: 1.2rem;
+  font-size: 1.2rem;
   border-radius: 20px;
 }
 

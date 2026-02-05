@@ -1,15 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 
 export interface FareSettings {
-    baseFare: number;
     perKmRate: number;
-    waitingRatePerMinute: number;
+    waitingRatePerTenMinutes: number;
 }
 
 const DEFAULT_SETTINGS: FareSettings = {
-    baseFare: 100,
     perKmRate: 50,
-    waitingRatePerMinute: 2,
+    waitingRatePerTenMinutes: 20,
 };
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -27,8 +25,9 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
     const [isActive, setIsActive] = useState(false);
     const [distance, setDistance] = useState(0);
-    const [waitingMinutes, setWaitingMinutes] = useState(0);
-    const [fare, setFare] = useState(settings.baseFare);
+    const [waitingSeconds, setWaitingSeconds] = useState(0);
+    const [isWaiting, setIsWaiting] = useState(false);
+    const [fare, setFare] = useState(0);
 
     const lastPosRef = useRef<GeolocationCoordinates | null>(null);
     const watchIdRef = useRef<number | null>(null);
@@ -37,8 +36,9 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
     const startRide = () => {
         setIsActive(true);
         setDistance(0);
-        setWaitingMinutes(0);
-        setFare(settings.baseFare);
+        setWaitingSeconds(0);
+        setIsWaiting(false);
+        setFare(0);
         lastPosRef.current = null;
 
         if ("geolocation" in navigator) {
@@ -66,34 +66,43 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
 
     const stopRide = () => {
         setIsActive(false);
+        setIsWaiting(false);
         if (watchIdRef.current !== null) {
             navigator.geolocation.clearWatch(watchIdRef.current);
         }
     };
 
-    useEffect(() => {
+    const toggleWaiting = () => {
         if (isActive) {
+            setIsWaiting(prev => !prev);
+        }
+    };
+
+    useEffect(() => {
+        if (isActive && isWaiting) {
             timerRef.current = window.setInterval(() => {
-                // Increment waiting time if speed is very low (mocking logic)
-                // In a real app we'd check position change vs time
-            }, 60000);
+                setWaitingSeconds(prev => prev + 1);
+            }, 1000);
         } else {
             if (timerRef.current) clearInterval(timerRef.current);
         }
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    }, [isActive]);
+    }, [isActive, isWaiting]);
 
     useEffect(() => {
-        const calculatedFare = settings.baseFare + (distance * settings.perKmRate) + (waitingMinutes * settings.waitingRatePerMinute);
+        const waitingTenMinUnits = waitingSeconds / 600;
+        const calculatedFare = (distance * settings.perKmRate) + (waitingTenMinUnits * settings.waitingRatePerTenMinutes);
         setFare(calculatedFare);
-    }, [distance, waitingMinutes, settings]);
+    }, [distance, waitingSeconds, settings]);
 
     return {
         isActive,
+        isWaiting,
         distance,
-        waitingMinutes,
+        waitingSeconds,
         fare,
         startRide,
-        stopRide
+        stopRide,
+        toggleWaiting
     };
 }
