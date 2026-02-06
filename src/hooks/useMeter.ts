@@ -22,6 +22,9 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     return R * c;
 }
 
+const MAX_ACCURACY = 35; // meters - ignore points worse than this
+const MAX_SPEED_KMH = 150; // km/h - ignore physically impossible jumps
+
 export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
     const [isActive, setIsActive] = useState(false);
     const [distance, setDistance] = useState(0);
@@ -32,6 +35,7 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
     const [isWaitingForLock, setIsWaitingForLock] = useState(false);
 
     const lastPosRef = useRef<GeolocationCoordinates | null>(null);
+    const lastTimestampRef = useRef<number | null>(null);
     const watchIdRef = useRef<number | null>(null);
     const timerRef = useRef<number | null>(null);
 
@@ -44,6 +48,7 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
         setGpsError(null);
         setIsWaitingForLock(true);
         lastPosRef.current = null;
+        lastTimestampRef.current = null;
 
         if ("geolocation" in navigator) {
             watchIdRef.current = navigator.geolocation.watchPosition(
@@ -51,19 +56,38 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
                     setIsWaitingForLock(false);
                     setGpsError(null);
 
-                    if (lastPosRef.current) {
+                    // 1. Accuracy Filter: Ignore high error margins
+                    if (position.coords.accuracy > MAX_ACCURACY) {
+                        console.log(`Ignoring poor signal: accuracy ${position.coords.accuracy}m`);
+                        return;
+                    }
+
+                    if (lastPosRef.current && lastTimestampRef.current) {
                         const d = calculateDistance(
                             lastPosRef.current.latitude,
                             lastPosRef.current.longitude,
                             position.coords.latitude,
                             position.coords.longitude
                         );
-                        // Lower threshold to 5 meters (0.005 km) for better responsiveness on foot
-                        if (d > 0.005) {
-                            setDistance(prev => prev + d);
+
+                        const timeDiffSeconds = (position.timestamp - lastTimestampRef.current) / 1000;
+                        const speedKmh = d / (timeDiffSeconds / 3600);
+
+                        // 2. Speed Check: Ignore jumps that are physically impossible
+                        // 3. Distance Threshold: Minimum 5m to count as movement
+                        if (speedKmh <= MAX_SPEED_KMH && d > 0.005) {
+                            setDistance(prev => {
+                                const newDist = prev + d;
+                                return newDist;
+                            });
+                        } else if (speedKmh > MAX_SPEED_KMH) {
+                            console.log(`Ignoring jump: speed ${speedKmh.toFixed(1)} km/h`);
+                            return; // Don't update lastPos if it's a crazy jump
                         }
                     }
+
                     lastPosRef.current = position.coords;
+                    lastTimestampRef.current = position.timestamp;
                 },
                 (error) => {
                     console.error("GPS Error:", error);
@@ -76,7 +100,7 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 10000,
+                    timeout: 5000,
                     maximumAge: 0
                 }
             );

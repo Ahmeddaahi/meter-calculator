@@ -78,13 +78,13 @@ function App() {
           <div className="label">TOTAL FARE</div>
           <div className="fare-display meter-font">
             <span className="currency">ETB</span>
-            {Math.round(fare).toLocaleString()}
+            {fare.toFixed(2)}
           </div>
 
           <div className="stats-row">
             <div className="stat-item">
               <div className="stat-label">DISTANCE</div>
-              <div className="stat-value meter-font">{distance.toFixed(2)} <small>km</small></div>
+              <div className="stat-value meter-font">{distance.toFixed(3)} <small>km</small></div>
             </div>
             <div className="stat-divider"></div>
             <div className={`stat-item ${isWaiting ? 'waiting-active' : ''}`}>
