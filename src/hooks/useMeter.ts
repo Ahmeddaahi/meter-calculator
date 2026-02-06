@@ -22,7 +22,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     return R * c;
 }
 
-const MAX_ACCURACY = 35; // meters - ignore points worse than this
+const MAX_ACCURACY = 100; // meters - ignore points worse than this
 const MAX_SPEED_KMH = 150; // km/h - ignore physically impossible jumps
 
 export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
@@ -33,6 +33,7 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
     const [fare, setFare] = useState(0);
     const [gpsError, setGpsError] = useState<string | null>(null);
     const [isWaitingForLock, setIsWaitingForLock] = useState(false);
+    const [accuracy, setAccuracy] = useState<number | null>(null);
 
     const lastPosRef = useRef<GeolocationCoordinates | null>(null);
     const lastTimestampRef = useRef<number | null>(null);
@@ -47,6 +48,7 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
         setFare(0);
         setGpsError(null);
         setIsWaitingForLock(true);
+        setAccuracy(null);
         lastPosRef.current = null;
         lastTimestampRef.current = null;
 
@@ -55,8 +57,9 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
                 (position) => {
                     setIsWaitingForLock(false);
                     setGpsError(null);
+                    setAccuracy(position.coords.accuracy);
 
-                    // 1. Accuracy Filter: Ignore high error margins
+                    // 1. Accuracy Filter: Loosened to 100m to allow tracking in weak signal
                     if (position.coords.accuracy > MAX_ACCURACY) {
                         console.log(`Ignoring poor signal: accuracy ${position.coords.accuracy}m`);
                         return;
@@ -74,12 +77,9 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
                         const speedKmh = d / (timeDiffSeconds / 3600);
 
                         // 2. Speed Check: Ignore jumps that are physically impossible
-                        // 3. Distance Threshold: Minimum 5m to count as movement
-                        if (speedKmh <= MAX_SPEED_KMH && d > 0.005) {
-                            setDistance(prev => {
-                                const newDist = prev + d;
-                                return newDist;
-                            });
+                        // 3. Distance Threshold: Lowered to 2 meters for "real time" feel
+                        if (speedKmh <= MAX_SPEED_KMH && d > 0.002) {
+                            setDistance(prev => prev + d);
                         } else if (speedKmh > MAX_SPEED_KMH) {
                             console.log(`Ignoring jump: speed ${speedKmh.toFixed(1)} km/h`);
                             return; // Don't update lastPos if it's a crazy jump
@@ -149,6 +149,7 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
         fare,
         gpsError,
         isWaitingForLock,
+        accuracy,
         startRide,
         stopRide,
         toggleWaiting

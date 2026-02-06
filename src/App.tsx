@@ -33,6 +33,7 @@ function App() {
     fare,
     gpsError,
     isWaitingForLock,
+    accuracy,
     startRide,
     stopRide,
     toggleWaiting
@@ -97,8 +98,12 @@ function App() {
           <span className="taxi-icon">🚕</span>
           <h1>TAXI METER</h1>
         </div>
-        <div className={`gps-indicator ${isActive && !gpsError ? 'active' : ''}`}>
-          {gpsError ? 'ERROR' : isActive ? 'GPS LIVE' : 'GPS STANDBY'}
+        <div className={`gps-indicator ${isActive && !gpsError ? 'active' : ''} ${accuracy !== null && accuracy < 20 ? 'precise' : ''}`}>
+          {gpsError ? 'ERROR' : isActive ? (
+            <span className="gps-text">
+              GPS LIVE {accuracy !== null && <small>({Math.round(accuracy)}m)</small>}
+            </span>
+          ) : 'GPS STANDBY'}
         </div>
       </header>
 
