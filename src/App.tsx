@@ -34,6 +34,8 @@ const translations = {
     save: 'SAVE',
     noRides: 'No rides recorded yet.',
     confirmClear: 'Are you sure you want to clear all history?',
+    viewPricing: 'View Pricing',
+    pricingInfo: 'Pricing Information',
   },
   so: {
     title: 'METER PRO',
@@ -59,7 +61,9 @@ const translations = {
     save: 'Ansixi',
     noRides: 'Weli wax safar ah lama duubin.',
     confirmClear: 'Ma hubtaa inaad rabto inaad tirtirto dhammaan taariikhda?',
-  }
+    viewPricing: 'Eeg Qiimaha',
+    pricingInfo: 'Macluumaadka Qiimaha',
+  },
 };
 
 interface RideHistoryEntry {
@@ -102,6 +106,7 @@ function App() {
   } = useMeter(settings);
 
   const [showHistory, setShowHistory] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
   const [history, setHistory] = useState<RideHistoryEntry[]>(() => {
     const saved = localStorage.getItem(HISTORY_KEY);
     return saved ? JSON.parse(saved) : [];
@@ -216,6 +221,9 @@ function App() {
       </main>
 
       <footer className="footer glass">
+        <button className="btn-secondary" onClick={() => setShowPricing(true)}>
+          {t('viewPricing')}
+        </button>
         <button className="btn-secondary" onClick={() => setShowHistory(true)}>{t('history')}</button>
       </footer>
 
@@ -252,6 +260,29 @@ function App() {
       )}
 
       {/* Settings Modal Removed */}
+
+      {showPricing && (
+        <div className="modal-overlay" onClick={() => setShowPricing(false)}>
+          <div className="modal glass" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{t('pricingInfo')}</h2>
+            </div>
+
+            <div className="pricing-details">
+              <div className="history-item glass">
+                <div className="history-date">{t('ratePerKm')}</div>
+                <div className="history-fare">ETB {OFFICIAL_FARE_SETTINGS.perKmRate.toFixed(2)}</div>
+              </div>
+              <div className="history-item glass">
+                <div className="history-date">{t('waitingRate')}</div>
+                <div className="history-fare">ETB {OFFICIAL_FARE_SETTINGS.waitingRatePerTenMinutes.toFixed(2)}</div>
+              </div>
+            </div>
+
+            <button className="btn-primary" onClick={() => setShowPricing(false)}>{t('close')}</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
