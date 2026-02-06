@@ -183,7 +183,7 @@ function App() {
           <div className="label">{t('currentFare')}</div>
           <div className="fare-display meter-font">
             <span className="currency">ETB</span>
-            {fare.toFixed(2)}
+            {Math.round(fare)}
           </div>
 
           <div className="stats-row">
@@ -245,7 +245,7 @@ function App() {
                       {new Date(ride.timestamp).toLocaleString()}
                     </div>
                     <div className="history-stats">
-                      <div className="history-fare">ETB {ride.fare.toFixed(2)}</div>
+                      <div className="history-fare">ETB {Math.round(ride.fare)}</div>
                       <div className="history-details">
                         {ride.distance.toFixed(3)} km | {formatTime(ride.waitingSeconds)} wait
                       </div>
@@ -271,11 +271,11 @@ function App() {
             <div className="pricing-details">
               <div className="history-item glass">
                 <div className="history-date">{t('ratePerKm')}</div>
-                <div className="history-fare">ETB {OFFICIAL_FARE_SETTINGS.perKmRate.toFixed(2)}</div>
+                <div className="history-fare">ETB {OFFICIAL_FARE_SETTINGS.perKmRate}</div>
               </div>
               <div className="history-item glass">
                 <div className="history-date">{t('waitingRate')}</div>
-                <div className="history-fare">ETB {OFFICIAL_FARE_SETTINGS.waitingRatePerTenMinutes.toFixed(2)}</div>
+                <div className="history-fare">ETB {OFFICIAL_FARE_SETTINGS.waitingRatePerTenMinutes}</div>
               </div>
             </div>
 
