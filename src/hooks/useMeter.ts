@@ -76,8 +76,8 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
                         const speedKmh = d / (timeDiffSeconds / 3600);
 
                         // 2. Speed Check: Ignore jumps that are physically impossible
-                        // 3. Distance Threshold: Lowered to 2 meters for "real time" feel
-                        if (speedKmh <= MAX_SPEED_KMH && d > 0.002) {
+                        // 3. Distance Threshold: Lowered to 0.5 meters for high-responsive "real time" feel
+                        if (speedKmh <= MAX_SPEED_KMH && d > 0.0005) {
                             setDistance(prev => prev + d);
                         } else if (speedKmh > MAX_SPEED_KMH) {
                             console.log(`Ignoring jump: speed ${speedKmh.toFixed(1)} km/h`);

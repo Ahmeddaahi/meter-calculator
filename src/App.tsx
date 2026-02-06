@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMeter } from './hooks/useMeter';
 import { OFFICIAL_FARE_SETTINGS } from './config/fareConfig';
+import { RollingNumber } from './components/RollingNumber';
 import type { FareSettings } from './hooks/useMeter';
 import './App.css';
 
@@ -183,18 +184,23 @@ function App() {
           <div className="label">{t('currentFare')}</div>
           <div className="fare-display meter-font">
             <span className="currency">ETB</span>
-            {Math.round(fare)}
+            <RollingNumber value={Math.round(fare)} />
           </div>
 
           <div className="stats-row">
             <div className="stat-item">
               <div className="stat-label">{t('distance')}</div>
-              <div className="stat-value meter-font">{distance.toFixed(3)} <small>km</small></div>
+              <div className="stat-value meter-font">
+                <RollingNumber value={distance.toFixed(3)} />
+                <small>km</small>
+              </div>
             </div>
             <div className="stat-divider"></div>
             <div className={`stat-item ${isWaiting ? 'waiting-active' : ''}`}>
               <div className="stat-label">{t('waiting')}</div>
-              <div className="stat-value meter-font">{formatTime(waitingSeconds)}</div>
+              <div className="stat-value meter-font">
+                <RollingNumber value={formatTime(waitingSeconds)} />
+              </div>
             </div>
           </div>
         </div>
