@@ -1,15 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap');
 
 :root {
-  --bg-color: #000000;
-  --card-bg: #121212;
-  --accent-color: #FFD700; /* Taxi Yellow/Gold */
-  --accent-glow: rgba(255, 215, 0, 0.3);
-  --text-primary: #FFFFFF;
-  --text-secondary: #B0B0B0;
-  --danger-color: #FF4444;
-  --success-color: #00C851;
-  
+  --bg-color: #0c0c0d;
+  --card-bg: #161618;
+  --accent-color: #ffb300;
+  /* Professional Amber */
+  --accent-glow: rgba(255, 179, 0, 0.4);
+  --text-primary: #fcfcfc;
+  --text-secondary: #94a3b8;
+  --danger-color: #ef4444;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -26,17 +28,24 @@
 body {
   margin: 0;
   display: block;
-  min-height: 100vh;
-  overflow-x: hidden;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: fixed;
+  /* Extra precaution against scrolling */
 }
 
 #root {
-  min-height: 100vh;
+  height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   margin: 0;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -99,9 +108,17 @@ button:active {
 
 /* Animations */
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .animate-pulse {

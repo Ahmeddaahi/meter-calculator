@@ -92,10 +92,10 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
                 (error) => {
                     console.error("GPS Error:", error);
                     setIsWaitingForLock(false);
-                    let msg = "Unknown GPS Error";
-                    if (error.code === error.PERMISSION_DENIED) msg = "GPS Permission Denied. Please enable location.";
-                    if (error.code === error.POSITION_UNAVAILABLE) msg = "GPS Signal Lost. Try moving to an open area.";
-                    if (error.code === error.TIMEOUT) msg = "GPS Request Timed Out.";
+                    let msg = "Cillad GPS aan la aqoon";
+                    if (error.code === error.PERMISSION_DENIED) msg = "Oggolaanshaha GPS waa loo diiday. Fadlan fura goobta (location).";
+                    if (error.code === error.POSITION_UNAVAILABLE) msg = "Signal-ka GPS waa lumay. Isku day inaad u guurto meel bannaan.";
+                    if (error.code === error.TIMEOUT) msg = "Codsiga GPS wuu dhacay xilligii loogu tala galay.";
                     setGpsError(msg);
                 },
                 {
@@ -105,7 +105,7 @@ export function useMeter(settings: FareSettings = DEFAULT_SETTINGS) {
                 }
             );
         } else {
-            setGpsError("Geolocation is not supported by this browser.");
+            setGpsError("Goobta (Geolocation) lagama taageero browser-kan.");
         }
     };
 
