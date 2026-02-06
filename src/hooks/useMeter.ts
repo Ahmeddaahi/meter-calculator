@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 
+import { OFFICIAL_FARE_SETTINGS } from '../config/fareConfig';
+
 export interface FareSettings {
     perKmRate: number;
     waitingRatePerTenMinutes: number;
 }
 
-const DEFAULT_SETTINGS: FareSettings = {
-    perKmRate: 50,
-    waitingRatePerTenMinutes: 20,
-};
+const DEFAULT_SETTINGS: FareSettings = OFFICIAL_FARE_SETTINGS;
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371; // Earth's radius in km

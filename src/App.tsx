@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMeter } from './hooks/useMeter';
+import { OFFICIAL_FARE_SETTINGS } from './config/fareConfig';
 import type { FareSettings } from './hooks/useMeter';
 import './App.css';
 
-const STORAGE_KEY = 'taxi-meter-settings';
 const HISTORY_KEY = 'taxi-meter-history';
 const LANG_KEY = 'taxi-meter-lang';
 
@@ -85,13 +85,7 @@ function App() {
     localStorage.setItem(LANG_KEY, nextLang);
   };
 
-  const [settings, setSettings] = useState<FareSettings>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : {
-      perKmRate: 50,
-      waitingRatePerTenMinutes: 20,
-    };
-  });
+  const settings: FareSettings = OFFICIAL_FARE_SETTINGS;
 
   const {
     isActive,
@@ -106,27 +100,14 @@ function App() {
     stopRide,
     toggleWaiting
   } = useMeter(settings);
-  const [showSettings, setShowSettings] = useState(false);
+
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<RideHistoryEntry[]>(() => {
     const saved = localStorage.getItem(HISTORY_KEY);
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Buffer state for modal inputs
-  const [tempSettings, setTempSettings] = useState<FareSettings>(settings);
-
-  useEffect(() => {
-    if (showSettings) {
-      setTempSettings(settings);
-    }
-  }, [showSettings, settings]);
-
-  const handleSave = () => {
-    setSettings(tempSettings);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tempSettings));
-    setShowSettings(false);
-  };
+  // Removed manual settings logic
 
   const handleStopRide = () => {
     if (fare > 0 || distance > 0) {
@@ -235,9 +216,6 @@ function App() {
       </main>
 
       <footer className="footer glass">
-        <button className="btn-secondary" onClick={() => setShowSettings(!showSettings)}>
-          {t('settings')}
-        </button>
         <button className="btn-secondary" onClick={() => setShowHistory(true)}>{t('history')}</button>
       </footer>
 
@@ -273,31 +251,7 @@ function App() {
         </div>
       )}
 
-      {showSettings && (
-        <div className="modal-overlay" onClick={() => setShowSettings(false)}>
-          <div className="modal glass" onClick={e => e.stopPropagation()}>
-            <h2>{t('fareSettings')}</h2>
-
-            <div className="setting-input">
-              <label>{t('ratePerKm')}</label>
-              <input
-                type="number"
-                value={tempSettings.perKmRate}
-                onChange={e => setTempSettings({ ...tempSettings, perKmRate: Number(e.target.value) })}
-              />
-            </div>
-            <div className="setting-input">
-              <label>{t('waitingRate')}</label>
-              <input
-                type="number"
-                value={tempSettings.waitingRatePerTenMinutes}
-                onChange={e => setTempSettings({ ...tempSettings, waitingRatePerTenMinutes: Number(e.target.value) })}
-              />
-            </div>
-            <button className="btn-primary" onClick={handleSave}>{t('save')}</button>
-          </div>
-        </div>
-      )}
+      {/* Settings Modal Removed */}
     </div>
   );
 }
