@@ -4,6 +4,17 @@ import type { FareSettings } from './hooks/useMeter';
 import './App.css';
 
 const STORAGE_KEY = 'taxi-meter-settings';
+const HISTORY_KEY = 'taxi-meter-history';
+
+interface RideHistoryEntry {
+  id: string;
+  timestamp: number;
+  fare: number;
+  distance: number;
+  waitingSeconds: number;
+  perKmRate: number;
+  waitingRatePerTenMinutes: number;
+}
 
 function App() {
   const [settings, setSettings] = useState<FareSettings>(() => {
@@ -27,6 +38,11 @@ function App() {
     toggleWaiting
   } = useMeter(settings);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<RideHistoryEntry[]>(() => {
+    const saved = localStorage.getItem(HISTORY_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // Buffer state for modal inputs
   const [tempSettings, setTempSettings] = useState<FareSettings>(settings);
@@ -41,6 +57,31 @@ function App() {
     setSettings(tempSettings);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tempSettings));
     setShowSettings(false);
+  };
+
+  const handleStopRide = () => {
+    if (fare > 0 || distance > 0) {
+      const newEntry: RideHistoryEntry = {
+        id: new Date().toISOString(),
+        timestamp: Date.now(),
+        fare,
+        distance,
+        waitingSeconds,
+        perKmRate: settings.perKmRate,
+        waitingRatePerTenMinutes: settings.waitingRatePerTenMinutes,
+      };
+      const updatedHistory = [newEntry, ...history];
+      setHistory(updatedHistory);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+    }
+    stopRide();
+  };
+
+  const clearHistory = () => {
+    if (confirm('Are you sure you want to clear all history?')) {
+      setHistory([]);
+      localStorage.removeItem(HISTORY_KEY);
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -107,7 +148,7 @@ function App() {
               >
                 {isWaiting ? 'STOP WAITING' : 'START WAITING'}
               </button>
-              <button className="btn-danger stop-btn" onClick={stopRide}>
+              <button className="btn-danger stop-btn" onClick={handleStopRide}>
                 STOP RIDE
               </button>
             </div>
@@ -119,8 +160,40 @@ function App() {
         <button className="btn-secondary" onClick={() => setShowSettings(!showSettings)}>
           SETTINGS
         </button>
-        <button className="btn-secondary">HISTORY</button>
+        <button className="btn-secondary" onClick={() => setShowHistory(true)}>HISTORY</button>
       </footer>
+
+      {showHistory && (
+        <div className="modal-overlay" onClick={() => setShowHistory(false)}>
+          <div className="modal glass history-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Ride History</h2>
+              <button className="btn-clear" onClick={clearHistory}>Clear All</button>
+            </div>
+
+            <div className="history-list">
+              {history.length === 0 ? (
+                <div className="empty-history">No rides recorded yet.</div>
+              ) : (
+                history.map(ride => (
+                  <div key={ride.id} className="history-item glass">
+                    <div className="history-date">
+                      {new Date(ride.timestamp).toLocaleString()}
+                    </div>
+                    <div className="history-stats">
+                      <div className="history-fare">ETB {ride.fare.toFixed(2)}</div>
+                      <div className="history-details">
+                        {ride.distance.toFixed(3)} km | {formatTime(ride.waitingSeconds)} wait
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <button className="btn-primary" onClick={() => setShowHistory(false)}>CLOSE</button>
+          </div>
+        </div>
+      )}
 
       {showSettings && (
         <div className="modal-overlay" onClick={() => setShowSettings(false)}>
