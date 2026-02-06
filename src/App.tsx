@@ -12,7 +12,7 @@ type Language = 'en' | 'so';
 const translations = {
   en: {
     title: 'METER PRO',
-    telemetry: 'LIVE TELEMETRY',
+    telemetry: 'LIVE GPS',
     ready: 'READY',
     signalError: 'SIGNAL ERROR',
     connecting: 'ESTABLISHING CONNECTION...',
@@ -37,7 +37,7 @@ const translations = {
   },
   so: {
     title: 'METER PRO',
-    telemetry: 'TELEMETERIYADA TOOSKA AH',
+    telemetry: 'GPS ks TOOSKA AH',
     ready: 'DIYAAR',
     signalError: 'CILAD ISGAARSIINEED',
     connecting: 'ISKU XIRKA AYAA SOCDA...',
