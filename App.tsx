@@ -2,8 +2,8 @@ import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import AppNavigator from './src/navigation/AppNavigator';
-import { initDatabase } from './src/services/Database';
+import AppNavigator from './meter-app/src/navigation/AppNavigator';
+import { initDatabase } from './meter-app/src/services/Database';
 
 export default function App() {
   const [isReady, setIsReady] = useState(false);
